@@ -76,7 +76,6 @@ def translate(string="Abc 123"):
         '.O.OOO': 'number follows', '......': 'space'
     }
     if re.match(english_pattern,string):
-        print("english mode")
         for index,value in enumerate(string):
             if value.isalpha() and value .isupper():
                 res+=braille_alphabet_and_special_characters['capital follows']
@@ -111,9 +110,8 @@ def translate(string="Abc 123"):
                 res+=braille_alphabet_and_special_characters[string[position]]
             position+=1
             decimal_flag=1
-        print(res)
+        return res
     else: # input length will be multiples of 6
-        print("braille mode")
         res = ""
         capital_flag = False
         number_flag = False
@@ -162,12 +160,13 @@ def translate(string="Abc 123"):
             else:
                 res += english_char
 
-        print(res)
+        return res
 def main():
     parser=argparse.ArgumentParser(description="English To Braille and Vice-Versa")
-    parser.add_argument("input",type=str,help="Input String")
+    parser.add_argument("input",help="Input String",nargs='+')
     args_obj=parser.parse_args()
-    translate(args_obj.input)
+    result=translate(' '.join(args_obj.input))
+    print(result)
 if __name__=="__main__":
     # if ".....OO.....O.O...OO...........O.OOOO.....O.O...OO..........OO..OO.....OOO.OOOO..OOO"==".....OO.....O.O...OO...........O.OOOO.....O.O...OO..........OO..OO.....OOO.OOOO..OOO":
     #     print("yes")
