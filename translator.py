@@ -2,7 +2,7 @@ import argparse
 import re
 def translate(string="Abc 123"):
     braille_pattern=r"^[O.]"
-    english_pattern=r"^[A-Za-z0-9]-[O]"
+    english_pattern = r"^(?!O)[A-Za-z0-9]"
     float_pattern = r'[-+]?\d*\.\d+'
     braille_alphabet_and_special_characters = {
         "A": "O.....",
@@ -113,37 +113,55 @@ def translate(string="Abc 123"):
             decimal_flag=1
         print(res)
     else: # input length will be multiples of 6
-        res=""
         print("braille mode")
-        capital_flag=0
-        number_flag=0
-        decimal_flag=0
-        for i in range(0,len(string),6):
-            braille_character=string[i:i+6]
-            if braille_to_english[braille_character]=="capital follows":
-                capital_flag=1
-            elif braille_to_english[braille_character]=="number follows":
-                number_flag=1
-            elif braille_to_english[braille_character]==" ":
-                capital_flag=0 # reset all flags for a potential new  type of word
-                res+=" "
-                number_flag=0
-                decimal_flag=0
-            elif capital_flag==1:
-                print(braille_to_english[braille_character])
-                res+=braille_to_english[braille_character]
-                print(res)
-                capital_flag=0 # only following character to be capitalized
-            elif number_flag==1:
-                res+=braille_to_english[braille_character]
-            elif braille_to_english[braille_character]=='decimal follows':
-                decimal_flag=1
-            elif decimal_flag==1:
-                res+=braille_to_english[braille_character]+'.'
-                number_flag=1 # after the first decimal all other characters are treated as numbres
-                decimal_flag=0
+        res = ""
+        capital_flag = False
+        number_flag = False
+        decimal_flag = False
+
+        for i in range(0, len(string), 6):
+            braille_character = string[i:i + 6]
+            english_char = braille_to_english[braille_character]
+
+            if english_char == "capital follows":
+                capital_flag = True
+                continue
+
+            elif english_char == "number follows":
+                number_flag = True
+                continue
+
+            elif english_char == "space": # reset all flags for potential new type of word
+                capital_flag = False
+                number_flag = False
+                decimal_flag = False
+                res += " "
+                continue
+
+            elif english_char == "decimal follows":
+                decimal_flag = True
+                continue
+
+            elif decimal_flag:
+                res += braille_to_english[braille_character]
+                res += '.'
+                decimal_flag = False
+
+            elif number_flag:
+                number_map = {'O.....': '1', 'O.O...': '2', 'OO....': '3', 'OO.O..': '4', 'O..O..': '5',
+                              'OOO...': '6', 'OOOO..': '7', 'O.OO..': '8', '.OO...': '9', '.OOO..': '0'}
+                if braille_character in number_map:
+                    res += number_map[braille_character]
+                else:
+                    res += braille_to_english[braille_character]
+
+            elif capital_flag:
+                res += braille_to_english[braille_character].upper()
+                capital_flag = False  # Reset after capitalizing one character
+
             else:
-                res+=braille_to_english[braille_character].lower()
+                res += english_char
+
         print(res)
 def main():
     parser=argparse.ArgumentParser(description="English To Braille and Vice-Versa")
@@ -151,8 +169,8 @@ def main():
     args_obj=parser.parse_args()
     translate(args_obj.input)
 if __name__=="__main__":
-    if ".....OO.....O.O...OO...........O.OOOO.....O.O...OO..........OO..OO.....OOO.OOOO..OOO"==".....OO.....O.O...OO...........O.OOOO.....O.O...OO..........OO..OO.....OOO.OOOO..OOO":
-        print("yes")
-    else:
-        print("no")
+    # if ".....OO.....O.O...OO...........O.OOOO.....O.O...OO..........OO..OO.....OOO.OOOO..OOO"==".....OO.....O.O...OO...........O.OOOO.....O.O...OO..........OO..OO.....OOO.OOOO..OOO":
+    #     print("yes")
+    # else:
+    #     print("no")
     main()
